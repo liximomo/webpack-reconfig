@@ -1,0 +1,28 @@
+{
+  "name": "webpack-reconfig",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "liximomo",
+  "license": "MIT",
+  "files": [
+    "lib"
+  ],
+  "dependencies": {
+    "lodash.kebabcase": "^4.1.1",
+    "lodash.mergewith": "^4.6.1"
+  },
+  "devDependencies": {
+    "deep-freeze": "^0.0.1",
+    "jest": "^23.3.0"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test jest",
+    "test:watch": "NODE_ENV=test jest --watchAll"
+  },
+  "jest": {
+    "verbose": true,
+    "testMatch": [
+      "**/__tests__/**/*.js"
+    ]
+  }
+}
