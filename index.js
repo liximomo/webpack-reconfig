@@ -1,3 +1,5 @@
+'use strict';
+
 const base = require('./lib/webpack-helpers/base');
 const Plugin = require('./lib/webpack-helpers/plugin');
 const Rule = require('./lib/webpack-helpers/rule');

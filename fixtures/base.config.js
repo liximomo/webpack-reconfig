@@ -1,5 +1,5 @@
-const { Slot, Inst, Rule, Plugin, merge } = require('webpack-reconfig');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const { inspect } = require('util');
+const { Slot, Inst, Rule, Loader, Plugin, extend, make } = require('../index');
 
 const cssRule = Rule('css', {
   use: [
@@ -11,11 +11,22 @@ const cssRule = Rule('css', {
   ],
 });
 
-const scssRule = merge(cssRule, {
+const scssRule = extend(cssRule, {
+  test: /\.scss$/,
   use: [Loader('sass-loader')],
 });
 
-module.exports = {
+const assetsRule = Rule('assets', {
+  test: /\.(jpe?g|png|gif|svg)$/i,
+  use: [
+    Loader('url-loader', {
+      limit: 10000,
+      name: 'media/[name].[hash:8].[ext]',
+    }),
+  ],
+});
+
+const config = {
   devtool: 'cheap-module-source-map',
 
   performance: { hints: false },
@@ -61,103 +72,25 @@ module.exports = {
           }),
         ],
       }),
-
-      {
-        test: /\.(s?css|style)$/,
-        include: pathCfg.style,
-        use: [
-          'style-loader',
-          'css-loader',
-          {
-            loader: 'postcss-loader',
-            ident: 'postcss',
-          },
-          {
-            loader: 'sass-loader',
-            options: {
-              includePaths: pathCfg.styleInclude,
-            },
-          },
-        ],
-      },
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: 'html-loader',
-            options: {
-              attrs: ['img:src'],
-            },
-          },
-        ],
-      },
-      {
-        test: /\.(jpe?g|png|gif|svg)$/i,
-        include: pathCfg.style,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 10000,
-              name: 'img/[name]_[hash].[ext]',
-            },
-          },
-        ],
-      },
-      {
-        test: /\.(mst|tml)$/i,
-        loader: 'raw-loader',
-      },
+      cssRule,
+      scssRule,
+      assetsRule,
     ],
   },
 
   resolve: {
-    modules: pathCfg.modules,
-    alias: {
-      root: pathCfg.src,
-      '@pc': pathCfg.pcPages,
-      '@hybird': pathCfg.hybridPages,
-      '@mobile': pathCfg.mobilePages,
-      '@component': pathCfg.componentPages,
-      'vue-comp': pathCfg.vueComponents,
-    },
     extensions: ['.js', '.json', '.jsx', '.vue'],
   },
 
   plugins: [
-    new VueLoaderPlugin(),
-    new webpack.ProvidePlugin({
-      React: 'react',
-      ReactDOM: 'react-dom',
-      PropTypes: 'prop-types',
-      cn: 'classnames',
-    }),
-    new webpack.DefinePlugin({
-      'process.env.TARGET': JSON.stringify(TARGET.BROWSER),
-      'process.env.NODE_ENV': JSON.stringify(NODE_ENV.DEVELOPMENT),
+    Plugin('vue-loader/lib/plugin'),
+    Plugin('webpack->DefinePlugin', {
+      'process.env.TARGET': JSON.stringify('browser'),
+      'process.env.NODE_ENV': JSON.stringify('development'),
       IS_PROD: JSON.stringify(false),
       __DEV__: JSON.stringify(true),
     }),
-    // ensure stable module ids
-    new webpack.NamedModulesPlugin(),
-    new CleanWebpackPlugin([pathCfg.output], {
-      root: pathCfg.projectPath,
-      verbose: false,
-      dry: false,
-      exclude: ['lib', 'html'],
-    }),
-    new webpack.DllReferencePlugin({
-      context: pathCfg.projectPath,
-      manifest: require('../vendor-dev-manifest.json'),
-    }),
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoEmitOnErrorsPlugin(),
   ],
-
-  _custom: {
-    hot: true,
-    html: {
-      dllfile: path.join(config.prod.publicPath, pathCfg.vendor, 'vendor.dev.js'),
-    },
-  },
 };
+
+console.log(inspect(make(config), { depth: Infinity }));
