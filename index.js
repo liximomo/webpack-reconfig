@@ -9,6 +9,7 @@ const make = require('./lib/core/make');
 const extend = require('./lib/core/extend');
 
 module.exports = {
+  Atom: base.Atom,
   Slot: base.Slot,
   Inst: base.Inst,
   Rule,
